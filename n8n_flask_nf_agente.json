@@ -1,0 +1,85 @@
+{
+  "name": "Perguntas NF via API Python",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "nf-agent",
+        "method": "POST",
+        "responseMode": "onReceived",
+        "options": {
+          "binaryPropertyName": "arquivo"
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:5005/perguntar",
+        "jsonParameters": false,
+        "options": {
+          "bodyContentType": "multipart-form-data"
+        },
+        "sendBinaryData": true,
+        "binaryPropertyName": "arquivo",
+        "formDataParameters": [
+          {
+            "name": "pergunta",
+            "value": "={{$json[\"body\"][\"pergunta\"]}}"
+          }
+        ]
+      },
+      "name": "Enviar para API Flask",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseData": "={{$json[\"resposta\"] || $json}}",
+        "options": {}
+      },
+      "name": "Responder Usu\u00e1rio",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        750,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Enviar para API Flask",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar para API Flask": {
+      "main": [
+        [
+          {
+            "node": "Responder Usu\u00e1rio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
